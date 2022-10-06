@@ -4,6 +4,9 @@ const dotenv = require("dotenv");
 
 // Models
 const { User } = require("../models/user.model");
+const { Product } = require("../models/product.model");
+const { Order } = require("../models/order.model");
+const { Cart } = require("../models/cart.model");
 
 // Utils
 const { catchAsync } = require("../utils/catchAsync.util");
@@ -91,15 +94,45 @@ const checkToken = catchAsync(async (req, res, next) => {
 });
 
 const getUserProducts = catchAsync(async (req, res, next) => {
-  res.status(200).json({ status: "success" });
+  const { sessionUser } = req;
+
+  const products = await Product.findAll({
+    where: { userId: sessionUser.id, status: "active" },
+  });
+
+  res.status(200).json({
+    status: "success",
+    data: { products },
+  });
 });
 
 const getUserOrders = catchAsync(async (req, res, next) => {
-  res.status(200).json({ status: "success" });
+  const { sessionUser } = req;
+
+  const orders = await Order.findAll({
+    where: { userId: sessionUser.id },
+    include: [{ model: Cart }],
+  });
+
+  res.status(200).json({
+    status: "success",
+    data: { orders },
+  });
 });
 
 const getUserOrderById = catchAsync(async (req, res, next) => {
-  res.status(200).json({ status: "success" });
+  const { sessionUser } = req;
+  const { id } = req.params;
+
+  const orders = await Order.findOne({
+    where: { id, userId: sessionUser.id },
+    include: [{ model: Cart }],
+  });
+
+  res.status(200).json({
+    status: "success",
+    data: { orders },
+  });
 });
 
 module.exports = {
